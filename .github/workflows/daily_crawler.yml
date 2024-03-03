@@ -23,4 +23,4 @@ jobs:
           pip install pyquery requests
 
       - name: Run crawler script
-        run: tel-trending-bot.py
+        run: python tel-trending-bot.py
