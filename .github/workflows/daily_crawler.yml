@@ -23,4 +23,7 @@ jobs:
           pip install pyquery requests
 
       - name: Run crawler script
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
         run: python tel-trending-bot.py
