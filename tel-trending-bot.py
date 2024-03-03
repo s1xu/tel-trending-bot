@@ -1,6 +1,7 @@
 import datetime
 from pyquery import PyQuery as pq
 import requests
+import os
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')  # 从 Secrets获取 Bot Token
 CHAT_ID = os.getenv('CHAT_ID')  # 从 Secrets获取 Chat ID
