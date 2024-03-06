@@ -8,7 +8,7 @@ CHAT_ID = os.getenv('CHAT_ID')  # 从 Secrets获取 Chat ID
 
 def push2Bot(title, language, description, url):
     language = language or 'all' 
-    URL = 'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
+    URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
     now = datetime.datetime.now().strftime('%Y%m%d')
     data = {
         'chat_id': CHAT_ID,
