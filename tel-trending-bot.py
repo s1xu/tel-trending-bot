@@ -6,12 +6,13 @@ import os
 BOT_TOKEN = os.getenv('BOT_TOKEN')  # 从 Secrets获取 Bot Token
 CHAT_ID = os.getenv('CHAT_ID')  # 从 Secrets获取 Chat ID
 
-def push2Bot(title, owner, description, url):
-    URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
+def push2Bot(title, language, description, url):
+    language = language or 'all' 
+    URL = 'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
     now = datetime.datetime.now().strftime('%Y%m%d')
     data = {
         'chat_id': CHAT_ID,
-        'text': f'#日期{now}\n*{title}*\n*{owner}*\n{description}\n{url}',
+        'text': f'*{title}*\n{description}\n#日期{now}  #{language}\n👉 [Repo URL]({url}) 👈',
         'parse_mode': 'markdown'
     }
     requests.get(URL, params=data)
@@ -31,18 +32,18 @@ def scrape_top5(languages):
         assert r.status_code == 200
 
         d = pq(r.content)
-        items = d('div.Box article.Box-row')[:5]  # 只获取前5条数据
+        items = d('div.Box article.Box-row')[:10]  # 获取前10条数据
 
         for item in items:
             i = pq(item)
             title = i(".lh-condensed a").text()
-            owner = i(".lh-condensed span.text-normal").text()
+            # owner = i(".lh-condensed span.text-normal").text()
             description = i("p.col-9").text()
             url = i(".lh-condensed a").attr("href")
             url = "https://github.com" + url
-            push2Bot(title, owner, description, url)
+            push2Bot(title, language, description, url)
 
 
 if __name__ == '__main__':
-    languages = ['java']
+    languages = ['','javascript','go','java']
     scrape_top5(languages)
