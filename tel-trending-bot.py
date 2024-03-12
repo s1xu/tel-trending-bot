@@ -2,9 +2,10 @@ import datetime
 from pyquery import PyQuery as pq
 import requests
 import os
+import time
 
-BOT_TOKEN = os.getenv('BOT_TOKEN')  # 从 Secrets获取 Bot Token
-CHAT_ID = os.getenv('CHAT_ID')  # 从 Secrets获取 Chat ID
+BOT_TOKEN = os.getenv('BOT_TOKEN')  # Get BOT_TOKEN from Secrets
+CHAT_ID = os.getenv('CHAT_ID')  # Get Chat ID from Secrets 
 
 def push2Bot(title, language, description, url):
     language = language or 'all' 
@@ -12,7 +13,7 @@ def push2Bot(title, language, description, url):
     now = datetime.datetime.now().strftime('%Y%m%d')
     data = {
         'chat_id': CHAT_ID,
-        'text': f'*{title}*\n{description}\n#日期{now}  #{language}\n👉 [Repo URL]({url}) 👈',
+        'text': f'*{title}*\n{description}\n#日期{now}  #{language}   [Repo URL]({url}) ',
         'parse_mode': 'markdown'
     }
     requests.get(URL, params=data)
@@ -32,8 +33,9 @@ def scrape_top5(languages):
         assert r.status_code == 200
 
         d = pq(r.content)
-        items = d('div.Box article.Box-row')[:10]  # 获取前10条数据
-
+        items = d('div.Box article.Box-row')[:10]  # Get the first 10 pieces of data
+        
+        counter = 0
         for item in items:
             i = pq(item)
             title = i(".lh-condensed a").text()
@@ -42,8 +44,12 @@ def scrape_top5(languages):
             url = i(".lh-condensed a").attr("href")
             url = "https://github.com" + url
             push2Bot(title, language, description, url)
-
-
+            
+            counter += 1
+            print(counter)
+            if counter % 20 == 0:
+                time.sleep(60) # The telege bot is limited to 20 per minute
+        
 if __name__ == '__main__':
-    languages = ['','javascript','go','java']
+    languages = ['','java','javascript','go']
     scrape_top5(languages)
