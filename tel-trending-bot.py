@@ -5,15 +5,30 @@ import os
 import time
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')  # Get BOT_TOKEN from Secrets
-CHAT_ID = os.getenv('CHAT_ID')  # Get Chat ID from Secrets 
+CHAT_ID = os.getenv('CHAT_ID')  # Get Chat ID from Secrets
+TRANSLATE_URL = os.getenv('TRANSLATE_URL')
 
-def push2Bot(title, language, description, url):
-    language = language or 'all' 
+
+def translate_text(text, source_lang, target_lang):
+    translate_url = TRANSLATE_URL
+    payload = {
+        "text": text,
+        "source_lang": source_lang,
+        "target_lang": target_lang
+    }
+    response = requests.post(translate_url, json=payload)
+    translated_text = response.json().get('data')
+    return translated_text
+
+
+def push2bot(title, language, description, url):
+    language = language or 'all'
     URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
+    translated_description = translate_text(description, 'en', 'zh')
     now = datetime.datetime.now().strftime('%Y%m%d')
     data = {
         'chat_id': CHAT_ID,
-        'text': f'*{title}*\n{description}\n#日期{now}  #{language}   [Repo URL]({url}) ',
+        'text': f'*{title}*\n{description}`\n{translated_description}\n`\n#日期{now}  #{language}   [Repo URL]({url}) ',
         'parse_mode': 'markdown'
     }
     requests.get(URL, params=data)
@@ -34,8 +49,7 @@ def scrape_top5(languages):
 
         d = pq(r.content)
         items = d('div.Box article.Box-row')[:10]  # Get the first 10 pieces of data
-        
-        counter = 0
+
         for item in items:
             i = pq(item)
             title = i(".lh-condensed a").text()
@@ -43,13 +57,10 @@ def scrape_top5(languages):
             description = i("p.col-9").text()
             url = i(".lh-condensed a").attr("href")
             url = "https://github.com" + url
-            push2Bot(title, language, description, url)
-            
-            counter += 1
-            print(counter)
-            if counter % 20 == 0:
-                time.sleep(60) # The telege bot is limited to 20 per minute
-        
+            push2bot(title, language, description, url)
+            time.sleep(2)
+
+
 if __name__ == '__main__':
-    languages = ['','java','javascript','go']
+    languages = ['', 'java', 'javascript', 'python', 'go']
     scrape_top5(languages)
